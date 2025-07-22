@@ -78,6 +78,13 @@ web_modules/
 .next
 out
 
+# Vercel
+.vercel
+
+# Cloudflare
+.wrangler
+wrangler.toml.bak
+
 # Nuxt.js build / generate output
 .nuxt
 dist

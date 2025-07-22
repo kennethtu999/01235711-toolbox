@@ -1,0 +1,38 @@
+{
+  "name": "01235711-toolbox",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "NEXT_EXPORT=true next build",
+    "start": "next start",
+    "lint": "next lint",
+    "pages:build": "NEXT_EXPORT=true npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.3",
+    "js-yaml": "^4.1.0",
+    "next": "14.2.30",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-syntax-highlighter": "^15.5.0",
+    "xml-formatter": "^3.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.8.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.17",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/react-syntax-highlighter": "^15.5.11",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.1.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.28.2"
+  }
+}
