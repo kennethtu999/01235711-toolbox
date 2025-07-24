@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import yaml from 'js-yaml';
+import * as yaml from 'yaml'; // 替換為 yaml 函式庫
+
 import { LayoutType } from './LayoutToggle';
-import SyntaxHighlighterOutput from './SyntaxHighlighter';
+// import SyntaxHighlighterOutput from './SyntaxHighlighter'; // <-- 移除這一行
+
+// 引入 JsonPreview 和 YamlPreview
+import JsonPreview from '../JsonPreview'; // 確保路徑正確
+import YamlPreview from '../YamlPreview'; // 確保路徑正確
 
 interface YamlFormatterProps {
   layout?: LayoutType;
@@ -18,13 +23,14 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
   const formatYaml = () => {
     try {
       setError('');
-      // 先解析 YAML 為 JavaScript 物件
-      const parsed = yaml.load(input);
-      // 再轉換回格式化的 YAML
-      const formatted = yaml.dump(parsed, {
+      // 使用 yaml.parseDocument() 解析，這會保留註解和其他元資料
+      const doc = yaml.parseDocument(input);
+
+      // 使用 doc.toString() 進行序列化，並應用格式化選項
+      // 這會保留註解。
+      const formatted = doc.toString({
         indent: 2,
         lineWidth: 80,
-        sortKeys: false
       });
       setOutput(formatted);
       setOutputType('yaml');
@@ -37,7 +43,8 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
   const yamlToJsonConvert = () => {
     try {
       setError('');
-      const parsed = yaml.load(input);
+      // yaml.parse() 會直接解析為 JavaScript 物件，註解會被捨棄
+      const parsed = yaml.parse(input);
       const jsonString = JSON.stringify(parsed, null, 2);
       setOutput(jsonString);
       setOutputType('json');
@@ -51,10 +58,10 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
     try {
       setError('');
       const parsed = JSON.parse(input);
-      const yamlString = yaml.dump(parsed, {
+      // yaml.stringify() 將 JavaScript 物件轉換為 YAML
+      const yamlString = yaml.stringify(parsed, {
         indent: 2,
         lineWidth: 80,
-        sortKeys: false
       });
       setOutput(yamlString);
       setOutputType('yaml');
@@ -66,7 +73,8 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
 
   const validateYaml = () => {
     try {
-      yaml.load(input);
+      // 使用 yaml.parse() 進行驗證，如果格式錯誤會拋出異常
+      yaml.parse(input);
       setError('');
       alert('YAML 格式正確！');
     } catch (err) {
@@ -185,16 +193,22 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
           />
         </div>
 
-        {/* 輸出區域 */}
+        {/* 輸出區域 - 根據 outputType 選擇顯示 JsonPreview 或 YamlPreview */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            處理結果 ({outputType.toUpperCase()})
-          </label>
-          <SyntaxHighlighterOutput
-            content={output}
-            language={outputType}
-            placeholder="處理後的資料將顯示在此處..."
-          />
+          {/* 這裡不再需要 label，因為 Preview 元件內部可以包含 title */}
+          {outputType === 'yaml' ? (
+            <YamlPreview
+              content={output}
+              title={`處理結果 (YAML)`} // 這裡可以自訂 title
+              placeholder="處理後的資料將顯示在此處..."
+            />
+          ) : ( // outputType === 'json'
+            <JsonPreview
+              content={output}
+              title={`處理結果 (JSON)`} // 這裡可以自訂 title
+              placeholder="處理後的資料將顯示在此處..."
+            />
+          )}
         </div>
       </div>
 
@@ -210,15 +224,16 @@ export default function YamlFormatter({ layout = 'horizontal' }: YamlFormatterPr
         <h3 className="text-sm font-medium text-blue-900 mb-2">使用說明</h3>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• 在輸入框中貼上或輸入 YAML 或 JSON 資料</li>
-          <li>• 點擊「格式化 YAML」按鈕美化 YAML 格式</li>
+          <li>• 點擊「格式化」按鈕美化 YAML 格式，**並保留原有註解**</li>
           <li>• 點擊「YAML → JSON」按鈕將 YAML 轉換為 JSON</li>
           <li>• 點擊「JSON → YAML」按鈕將 JSON 轉換為 YAML</li>
           <li>• 點擊「驗證」按鈕檢查 YAML 格式是否正確</li>
           <li>• 可以複製結果到剪貼簿或下載相對應的檔案</li>
           <li>• 使用布局切換按鈕調整輸入輸出區域的排列方式</li>
-          <li>• 使用 js-yaml 庫提供完整的 YAML 支援</li>
+          <li>• 使用 `yaml` 函式庫提供完整的 YAML 支援 (包括註解保留)</li>
+          <li>• 輸出區域現在支援全螢幕、複製功能，並對大型內容進行性能優化</li>
         </ul>
       </div>
     </div>
   );
-} 
+}
